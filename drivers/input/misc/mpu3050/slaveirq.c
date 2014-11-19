@@ -56,6 +56,14 @@ struct slaveirq_dev_data {
 	int pid;
 	int data_ready;
 	int timeout;
+	struct work_struct bma_irq_work;
+	struct i2c_adapter * adapter;
+	struct input_dev *input;
+#ifdef CONFIG_CIR_ALWAYS_READY
+	struct input_dev *input_cir;
+	struct wake_lock cir_always_ready_wake_lock;
+	int wake_lock_inited;
+#endif
 };
 
 /* The following depends on patch fa1f68db6ca7ebb6fc4487ac215bffba06c01c28
@@ -232,10 +240,59 @@ int slaveirq_init(struct i2c_adapter *slave_adapter,
 	data->data_ready = 0;
 	data->timeout = 0;
 
+#ifdef CONFIG_CIR_ALWAYS_READY
+	data->wake_lock_inited = 0;
+	data->slave_client = client;
+#endif
+
+	data->adapter = slave_adapter;
 	init_waitqueue_head(&data->slaveirq_wait);
 
-	res = request_irq(data->irq, slaveirq_handler, IRQF_TRIGGER_RISING,
-			  data->dev.name, data);
+	if(strncmp(name,"accelirq",strlen("accelirq")) == 0){
+	    dev = input_allocate_device();
+	    if (!dev)
+		return -ENOMEM;
+
+	    dev->name = SENSOR_NAME;
+	    dev->id.bustype = BUS_I2C;
+	    input_set_abs_params(dev, ABS_X, ABSMIN, ABSMAX, 0, 0);
+	    input_set_abs_params(dev, ABS_Y, ABSMIN, ABSMAX, 0, 0);
+	    input_set_abs_params(dev, ABS_Z, ABSMIN, ABSMAX, 0, 0);
+	    input_set_drvdata(dev, data);
+
+	    res = input_register_device(dev);
+	    if (res < 0) {
+		goto err_register_input_device;
+	    }
+	    data->input = dev;
+
+#ifdef CONFIG_CIR_ALWAYS_READY
+	    dev_cir = input_allocate_device();
+	    if (!dev_cir) {
+		goto err_allocate_input_cir_devive;
+	    }
+	    dev_cir->name = "CIRSensor";
+	    dev_cir->id.bustype = BUS_I2C;
+	    input_set_capability(dev_cir, EV_REL, SLOP_INTERRUPT);
+
+	    res = input_register_device(dev_cir);
+	    if (res < 0) {
+		goto err_register_cir_input_device;
+	    }
+	    data->input_cir = dev_cir;
+
+
+	    INIT_WORK(&data->bma_irq_work, bma250_irq_work_func);
+	    res = request_irq(data->irq, bma250_irq_handler, IRQF_TRIGGER_RISING,
+		    "bma250", data);
+	    enable_irq_wake(data->irq); 
+
+	    wake_lock_init(&(data->cir_always_ready_wake_lock), WAKE_LOCK_SUSPEND, "cir_always_ready");
+	    data->wake_lock_inited = 1;
+#endif
+	}else
+	    res = request_irq(data->irq, slaveirq_handler, IRQF_TRIGGER_RISING,
+		    data->dev.name, data);
 
 	if (res) {
 		dev_err(&slave_adapter->dev,
@@ -272,7 +329,12 @@ void slaveirq_exit(struct ext_slave_platform_data *pdata)
 
 	dev_info(data->dev.this_device, "Unregistering %s\n",
 		 data->dev.name);
-
+#ifdef CONFIG_CIR_ALWAYS_READY
+	if (data->wake_lock_inited == 1) {
+		dev_info(data->dev.this_device, "Destroy always_ready_wake_lock\n");
+		wake_lock_destroy(&(data->cir_always_ready_wake_lock));
+	}
+#endif
 	free_irq(data->irq, data);
 	misc_deregister(&data->dev);
 	kfree(pdata->irq_data);
