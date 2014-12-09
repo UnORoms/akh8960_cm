@@ -927,6 +927,7 @@ static int msm_mctl_release(struct msm_cam_media_controller *p_mctl)
 			VIDIOC_MSM_CSIPHY_RELEASE, NULL);
 	}
 
+#if (CONFIG_HTC_CAMERA_HAL_VERSION > 0)
 	if (p_mctl) {
 		if (!p_mctl->axi_sdev) {
 			pr_err("%s axi_sdev is null\n", __func__);
@@ -955,6 +956,7 @@ static int msm_mctl_release(struct msm_cam_media_controller *p_mctl)
 	else {
 		pr_err("%s p_mctl->isp_sdev is null\n", __func__);
 	}
+#endif
 
 	if(p_mctl->actctrl->actrl_vcm_on_mut)
 		mutex_lock(p_mctl->actctrl->actrl_vcm_on_mut);
