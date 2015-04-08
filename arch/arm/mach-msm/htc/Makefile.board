@@ -26,3 +26,5 @@ obj-$(CONFIG_MACH_M4_UL) += m4/
 # PYRAMID
 obj-$(CONFIG_MACH_PYRAMID) += pyramid/
 
+# ZARA
+obj-$(CONFIG_MACH_ZARA) += zara/
