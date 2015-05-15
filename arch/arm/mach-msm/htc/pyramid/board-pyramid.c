@@ -1702,6 +1702,11 @@ static struct platform_device ion_dev = {
 };
 #endif
 
+static struct platform_device msm_fm_platform_init = {
+	.name = "marimba_fm",
+	.id   = -1,
+};
+
 static struct platform_device *pyramid_devices[] __initdata = {
 	&msm8x60_device_acpuclk,
 	&msm_device_smd,
@@ -1802,6 +1807,7 @@ static struct platform_device *pyramid_devices[] __initdata = {
 	&msm8660_iommu_domain_device,
 	&scm_log_device,
 	&msm8660_pm_8x60,
+	&msm_fm_platform_init,
 };
 
 static struct memtype_reserve msm8x60_reserve_table[] __initdata = {
