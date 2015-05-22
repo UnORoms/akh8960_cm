@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2011, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2010-2011, Code Aurora Forum. All rights reserved.
  *
  * Based on the mp3 native driver in arch/arm/mach-msm/qdsp5v2/audio_mp3.c
  *
@@ -43,6 +43,11 @@
 #define FM_DISABLE	0x0
 #define FM_COPP		0x7
 
+#undef pr_info
+#undef pr_err
+#define pr_info(fmt, ...) pr_aud_info(fmt, ##__VA_ARGS__)
+#define pr_err(fmt, ...) pr_aud_err(fmt, ##__VA_ARGS__)
+
 struct audio {
 	struct mutex lock;
 
@@ -69,7 +74,7 @@ static int fm_audio_enable(struct audio *audio)
 	pr_info("%s: fm dest= %08x fm_source = %08x\n", __func__,
 		audio->fm_dst_copp_id, audio->fm_src_copp_id);
 
-	/* do afe loopback here */
+	
 
 	if (audio->fm_dest && audio->fm_source) {
 		if (afe_loopback(FM_ENABLE, audio->fm_dst_copp_id,
@@ -143,7 +148,7 @@ static void fm_audio_listner(u32 evt_id, union auddev_evt_data *evt_payload,
 static int fm_audio_disable(struct audio *audio)
 {
 
-	/* break the AFE loopback here */
+	
 	afe_loopback(FM_DISABLE, audio->fm_dst_copp_id, audio->fm_src_copp_id);
 	return 0;
 }
@@ -206,7 +211,7 @@ static int fm_audio_open(struct inode *inode, struct file *file)
 	if (audio->opened)
 		return -EPERM;
 
-	/* Allocate the decoder */
+	
 	audio->dec_id = SESSION_ID_FM;
 
 	audio->running = 0;

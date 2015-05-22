@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Google, Inc.
- * Copyright (c) 2010-2013, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2010-2012, Code Aurora Forum. All rights reserved.
  * Author: Brian Swetland <swetland@google.com>
  *
  * This software is licensed under the terms of the GNU General Public
@@ -32,6 +32,21 @@
 
 #define MAX_BUF 2
 #define BUFSZ (4800)
+
+#define Q6_EFFECT_DEBUG 0
+
+struct q6_copp_effect {
+	uint32_t effect_type;
+	uint32_t module_id;
+	uint32_t param_id;
+	uint32_t payload_size;
+	void *payload;
+};
+
+#undef pr_info
+#undef pr_err
+#define pr_info(fmt, ...) pr_aud_info(fmt, ##__VA_ARGS__)
+#define pr_err(fmt, ...) pr_aud_err(fmt, ##__VA_ARGS__)
 
 struct pcm {
 	struct mutex lock;
@@ -211,7 +226,7 @@ static long pcm_out_ioctl(struct file *file, unsigned int cmd,
 		if (rc < 0)
 			pr_err("%s: Send channel gain failed rc=%d\n",
 							__func__, rc);
-		/* disable mute by default */
+		
 		rc = q6asm_set_mute(pcm->ac, 0);
 		if (rc < 0)
 			pr_err("%s: Send mute command failed rc=%d\n",
@@ -260,7 +275,6 @@ static long pcm_out_ioctl(struct file *file, unsigned int cmd,
 	case AUDIO_GET_CONFIG: {
 		struct msm_audio_config config;
 		pr_debug("%s: AUDIO_GET_CONFIG\n", __func__);
-		memset(&config, 0, sizeof(config));
 		config.buffer_size = pcm->buffer_size;
 		config.buffer_count = pcm->buffer_count;
 		config.sample_rate = pcm->sample_rate;
@@ -284,6 +298,68 @@ static long pcm_out_ioctl(struct file *file, unsigned int cmd,
 			pr_err("%s: EQUALIZER FAILED\n", __func__);
 		break;
 	}
+	case AUDIO_SET_Q6_EFFECT: {
+		struct param {
+			uint32_t effect_type; 
+			uint32_t module_id;
+			uint32_t param_id;
+			uint32_t payload_size;
+		} q6_param;
+		void *payload;
+
+		if (copy_from_user(&q6_param, (void *) arg,
+					sizeof(q6_param))) {
+			pr_aud_err("%s: copy param from user failed\n",
+				__func__);
+			rc = -EFAULT;
+			break;
+		}
+
+		if (q6_param.payload_size <= 0 ||
+		    (q6_param.effect_type != 0 &&
+		     q6_param.effect_type != 1)) {
+			pr_aud_err("%s: unsupported param: %d, 0x%x, 0x%x, %d\n",
+				__func__, q6_param.effect_type,
+				q6_param.module_id, q6_param.param_id,
+				q6_param.payload_size);
+			rc = -EINVAL;
+			break;
+		}
+
+		payload = kzalloc(q6_param.payload_size, GFP_KERNEL);
+		if (!payload) {
+			pr_aud_err("%s: failed to allocate memory\n",
+				__func__);
+			rc = -ENOMEM;
+			break;
+		}
+		if (copy_from_user(payload, (void *) (arg + sizeof(q6_param)),
+				q6_param.payload_size)) {
+			pr_aud_err("%s: copy payload from user failed\n",
+				__func__);
+			kfree(payload);
+			rc = -EFAULT;
+			break;
+		}
+		if (q6_param.effect_type == 0) { 
+			rc = q6asm_enable_effect(pcm->ac, q6_param.module_id,
+						q6_param.param_id,
+						q6_param.payload_size,
+						payload);
+		}
+#if Q6_EFFECT_DEBUG
+		{
+			int *ptr;
+				int i;
+			ptr = (int *)payload;
+			for (i = 0; i < (q6_param.payload_size / 4); i++)
+				pr_aud_info("0x%08x", *(ptr + i));
+		}
+#endif
+		kfree(payload);
+		break;
+	}
+
 	default:
 		rc = -EINVAL;
 	}

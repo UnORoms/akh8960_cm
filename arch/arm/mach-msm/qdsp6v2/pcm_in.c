@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2009 Google, Inc.
  * Copyright (C) 2009 HTC Corporation
- * Copyright (c) 2010-2013, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2010-2012, Code Aurora Forum. All rights reserved.
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -40,6 +40,11 @@
 #define MIN_BUFFER_SIZE 160
 
 #define VOC_REC_NONE 0xFF
+
+#undef pr_info
+#undef pr_err
+#define pr_info(fmt, ...) pr_aud_info(fmt, ##__VA_ARGS__)
+#define pr_err(fmt, ...) pr_aud_err(fmt, ##__VA_ARGS__)
 
 struct pcm {
 	struct mutex lock;
@@ -256,7 +261,6 @@ static long pcm_in_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	}
 	case AUDIO_GET_CONFIG: {
 		struct msm_audio_config config;
-		memset(&config, 0, sizeof(config));
 		config.buffer_size = pcm->buffer_size;
 		config.buffer_count = pcm->buffer_count;
 		config.sample_rate = pcm->sample_rate;
@@ -458,7 +462,7 @@ static int pcm_in_release(struct inode *inode, struct file *file)
 		pcm->rec_mode = VOC_REC_NONE;
 	}
 
-	/* remove this session from topology list */
+	
 	auddev_cfg_tx_copp_topology(pcm->ac->session,
 				DEFAULT_COPP_TOPOLOGY);
 	mutex_unlock(&pcm->lock);

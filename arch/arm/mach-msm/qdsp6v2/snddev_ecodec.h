@@ -1,4 +1,4 @@
-/* Copyright (c) 2010, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2010, Code Aurora Forum. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -12,12 +12,12 @@
  */
 #ifndef __MACH_QDSP6V2_SNDDEV_ECODEC_H
 #define __MACH_QDSP6V2_SNDDEV_ECODEC_H
-#include <mach/qdsp6v2/audio_def.h>
+#include <mach/qdsp5v2/audio_def.h>
 
 struct snddev_ecodec_data {
-	u32 capability; /* RX or TX */
+	u32 capability; 
 	const char *name;
-	u32 copp_id; /* audpp routing */
+	u32 copp_id; 
 	u8 channel_mode;
 	u32 conf_pcm_ctl_val;
 	u32 conf_aux_codec_intf;

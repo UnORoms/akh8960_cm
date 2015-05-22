@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011, Code Aurora Forum. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -32,20 +32,25 @@
 
 #define HDMI_AUDIO_FIFO_WATER_MARK	4
 
+#undef pr_info
+#undef pr_err
+#define pr_info(fmt, ...) pr_aud_info(fmt, ##__VA_ARGS__)
+#define pr_err(fmt, ...) pr_aud_err(fmt, ##__VA_ARGS__)
+
 struct audio_buffer {
 	dma_addr_t phys;
 	void *data;
 	uint32_t size;
-	uint32_t used;	/* 1 = CPU is waiting for DMA to consume this buf */
-	uint32_t actual_size;	/* actual number of bytes read by DMA */
+	uint32_t used;	
+	uint32_t actual_size;	
 };
 
 struct lpa_if {
 	struct mutex lock;
 	struct msm_audio_config cfg;
 	struct audio_buffer audio_buf[6];
-	int cpu_buf;		/* next buffer the CPU will touch */
-	int dma_buf;		/* next buffer the DMA will touch */
+	int cpu_buf;		
+	int dma_buf;		
 	u8 *buffer;
 	dma_addr_t buffer_phys;
 	u32 dma_ch;
@@ -185,7 +190,7 @@ static long lpa_if_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		}
 		break;
 	case AUDIO_SET_CONFIG: {
-		/*  Setting default rate as 48khz */
+		
 		unsigned int cur_sample_rate =
 			HDMI_SAMPLE_RATE_48KHZ;
 		struct msm_audio_config config;
@@ -302,7 +307,7 @@ static ssize_t lpa_if_write(struct file *file, const char __user *buf,
 	int old_policy = current->policy;
 	int cap_nice = cap_raised(current_cap(), CAP_SYS_NICE);
 
-	 /* just for this write, set us real-time */
+	 
 	if (!task_has_rt_policy(current)) {
 		struct cred *new = prepare_creds();
 		cap_raise(new->cap_effective, CAP_SYS_NICE);
@@ -373,7 +378,7 @@ static ssize_t lpa_if_write(struct file *file, const char __user *buf,
 	rc = buf - start;
 end:
 	mutex_unlock(&lpa_if->lock);
-	/* restore old scheduling policy */
+	
 	if (!rt_policy(old_policy)) {
 		struct sched_param v = { .sched_priority = old_prio };
 		if ((sched_setscheduler(current, old_policy, &v)) < 0)

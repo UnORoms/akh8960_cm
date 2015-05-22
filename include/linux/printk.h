@@ -289,6 +289,17 @@ extern void dump_stack(void) __cold;
 	no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
 #endif
 
+#define pr_aud_fmt(fmt) "[AUD] " KBUILD_MODNAME ": " fmt
+#define pr_aud_fmt1(fmt) "[AUD]" fmt
+#define pr_aud_err(fmt, ...) \
+			printk(KERN_ERR pr_aud_fmt(fmt), ##__VA_ARGS__)
+#define pr_aud_err1(fmt, ...) \
+			printk(KERN_ERR pr_aud_fmt1(fmt), ##__VA_ARGS__)
+#define pr_aud_info(fmt, ...) \
+			printk(KERN_INFO pr_aud_fmt(fmt), ##__VA_ARGS__)
+#define pr_aud_info1(fmt, ...) \
+			printk(KERN_INFO pr_aud_fmt1(fmt), ##__VA_ARGS__)
+
 enum {
 	DUMP_PREFIX_NONE,
 	DUMP_PREFIX_ADDRESS,

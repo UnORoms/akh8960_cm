@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2011, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2010-2011, Code Aurora Forum. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -14,10 +14,10 @@
 #define __MACH_QDSP6_V2_SNDDEV_HDMI_H
 
 struct snddev_hdmi_data {
-	u32 capability;		/* RX or TX */
+	u32 capability;		
 	const char *name;
-	u32 copp_id;		/* audpp routing */
-	u32 acdb_id;		/* Audio Cal purpose */
+	u32 copp_id;		
+	u32 acdb_id;		
 	u8 channel_mode;
 	u32 default_sample_rate;
 	u32 on_apps;

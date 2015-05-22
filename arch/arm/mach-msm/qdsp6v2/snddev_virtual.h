@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011, Code Aurora Forum. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -13,8 +13,8 @@
 #define __MACH_QDSP6V2_SNDDEV_VIRTUAL_H
 
 struct snddev_virtual_data {
-	u32 capability; /* RX or TX */
+	u32 capability; 
 	const char *name;
-	u32 copp_id; /* Audpp routing */
+	u32 copp_id; 
 };
 #endif
