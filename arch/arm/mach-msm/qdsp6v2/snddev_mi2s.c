@@ -140,6 +140,7 @@ static int mi2s_get_gpios(struct platform_device *pdev)
 static int mi2s_fm_probe(struct platform_device *pdev)
 {
 	int rc = 0;
+	pr_err("%s:  \n", __func__);
 
 	rc = mi2s_get_gpios(pdev);
 	if (rc < 0) {
@@ -178,6 +179,7 @@ static int snddev_mi2s_open(struct msm_snddev_info *dev_info)
 	struct snddev_mi2s_drv_state *drv = &snddev_mi2s_drv;
 	struct snddev_mi2s_data *snddev_mi2s_data = dev_info->private_data;
 
+	pr_err("%s:  \n", __func__);
 	if (!dev_info) {
 		pr_err("%s:  msm_snddev_info is null\n", __func__);
 		return -EINVAL;
@@ -421,12 +423,16 @@ static struct platform_driver snddev_mi2s_driver = {
 static int __init snddev_mi2s_init(void)
 {
 	s32 rc = 0;
+	pr_err("%s: \n", __func__);
 
 	rc = platform_driver_register(&mi2s_fm_driver);
 	if (IS_ERR_VALUE(rc)) {
 		pr_err("%s: platform_driver_register for mi2s_fm_driver failed\n",
 				__func__);
 		goto error_mi2s_fm_platform_driver;
+	} else {
+		
+		pr_err("%s: platform_driver_register for mi2s_fm_driver success\n", __func__);
 	}
 
 	rc = platform_driver_register(&snddev_mi2s_driver);
@@ -434,6 +440,8 @@ static int __init snddev_mi2s_init(void)
 
 		pr_err("%s: platform_driver_register failed\n", __func__);
 		goto error_platform_driver;
+	} else {
+		pr_err("%s: platform_driver_register success\n", __func__);
 	}
 
 	return rc;
